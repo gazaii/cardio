@@ -42,3 +42,36 @@ function incrementarContador() {
   });
 }
 
+function cargarContador() {
+  // Conectar con MongoDB (si no lo has hecho antes)
+  if (!client.isConnected()) {
+    client.connect(err => {
+      if (err) {
+        console.error('Error connecting to MongoDB:', err);
+        return;
+      }
+      console.log('Connected to MongoDB Atlas!');
+    });
+  }
+
+  // Obtener la colección "contadores"
+  const collection = client.db('contador-app').collection('contadores');
+
+  // Buscar el documento del contador
+  collection.findOne({ _id: 1 }, (err, document) => {
+    if (err) {
+      console.error('Error fetching counter from MongoDB:', err);
+      return;
+    }
+    if (document) {
+      count = document.count;
+      contador.textContent = count;
+    } else {
+      console.log('Counter not found in MongoDB, starting at 0');
+    }
+  });
+}
+
+// Cargar el contador al iniciar la página
+cargarContador();
+
