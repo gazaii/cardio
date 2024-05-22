@@ -1,18 +1,44 @@
-// Obtener referencias a los elementos
-const contador = document.getElementById("contador");
-const btnActualizar = document.getElementById("btnActualizar");
+const MongoClient = require('mongodb').MongoClient;
 
-// Cargar el valor del contador almacenado en localStorage
-let count = localStorage.getItem("contador") || 0;
+const uri = 'mongodb+srv://lucianosekulic:<s2faZm:BKQEmt:6>@cluster0.cngnoje.mongodb.net/'; // Reemplaza con tus credenciales y datos
+const client = new MongoClient(uri);
 
-// Función para incrementar el contador
+client.connect(err => {
+  if (err) {
+    console.error('Error connecting to MongoDB:', err);
+    return;
+  }
+  console.log('Connected to MongoDB Atlas!');
+});
+
 function incrementarContador() {
   count++;
   contador.textContent = count;
 
-  // Actualizar el valor almacenado en localStorage
+  // Actualizar localStorage (opcional)
   localStorage.setItem("contador", count);
+
+  // Conectar con MongoDB (si no lo has hecho antes)
+  if (!client.isConnected()) {
+    client.connect(err => {
+      if (err) {
+        console.error('Error connecting to MongoDB:', err);
+        return;
+      }
+      console.log('Connected to MongoDB Atlas!');
+    });
+  }
+
+  // Obtener la colección "contadores"
+  const collection = client.db('contador-app').collection('contadores');
+
+  // Actualizar o insertar el documento del contador
+  collection.findOneAndUpdate({ _id: 1 }, { $inc: { count: 1 } }, { upsert: true }, (err, result) => {
+    if (err) {
+      console.error('Error updating counter in MongoDB:', err);
+      return;
+    }
+    console.log('Counter updated in MongoDB!');
+  });
 }
 
-// Evento de click para el botón "Actualizar"
-btnActualizar.addEventListener("click", incrementarContador);
